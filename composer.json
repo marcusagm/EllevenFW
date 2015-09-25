@@ -1,0 +1,42 @@
+{
+	"name": "marcusagm/ellevenfw",
+	"description": "O Elleven Framework é um framework PHP com o intuito de possibilitar a criação de sistemas de forma flexível e idenpendete de outros frameworks.",
+	"homepage": "http://fw.marcusmaia.com",
+	"license": "MIT",
+	"type": "library",
+	"minimum-stability": "dev",
+	"keywords": [
+		"php",
+		"framework"
+	],
+	"authors": [{
+		"name": "Marcus Alexandre Gomes Maia",
+		"email": "contato@marcusmaia.com.br",
+		"homepage": "http://www.marcusmaia.com.br"
+	}],
+	"require": {
+        "php": ">=5.3",
+		"ext-gd" : "*",
+		"ext-bz2" : "*",
+		"ext-pdo" : "*",
+        "ext-mbstring": "*"
+    },
+	"suggest": {
+		"ext-pdo-mysql": "For MySQL or MariaDB databases",
+		"ext-pdo_sqlsrv": "For MSSQL databases on Windows platform",
+		"ext-pdo_dblib": "For MSSQL or Sybase databases on Liunx/UNIX platform",
+		"ext-pdo_oci": "For Oracle databases",
+		"ext-pdo-pqsql": "For PostgreSQL databases",
+		"ext-pdo-sqlite": "For SQLite databases"
+	},
+	"autoload": {
+		"psr-4": {
+			"EllevenFw\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"EllevenFw\\Tests\\": "tests/"
+		}
+	}
+}

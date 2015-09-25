@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+Elleven Framework
+Copyright 2015 Marcus Maia <contato@marcusmaia.com>.
+
+Licensed under The MIT License
+For full copyright and license information, please see the LICENSE.txt
+Redistributions of files must retain the above copyright notice.
+
+@copyright	Copyright (c) Marcus Maia <contato@marcusmaia.com>
+@link		http://elleven.marcusmaia.com Elleven Kit
+@since		1.0.0
+@license	http://www.opensource.org/licenses/mit-license.php MIT License
+-->
+
+<!-- see http://www.phpunit.de/wiki/Documentation -->
+<!--phpunit bootstrap="/path/to/bootstrap.php"
+		 colors="false"
+		 convertErrorsToExceptions="true"
+		 convertNoticesToExceptions="true"
+		 convertWarningsToExceptions="true"
+		 stopOnFailure="true">
+</phpunit-->
+
+<phpunit bootstrap="./tests/bootstrap.php"
+	colors="true"
+	stopOnFailure="true"
+>
+</phpunit>
