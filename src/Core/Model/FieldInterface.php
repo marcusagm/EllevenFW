@@ -13,7 +13,7 @@
  * @license	http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-namespace ElleveFw\Core\Model;
+namespace EllevenFw\Core\Model;
 
 /**
  * Description of FieldInterface

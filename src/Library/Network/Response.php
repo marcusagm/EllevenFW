@@ -13,7 +13,7 @@
  * @license	http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-namespace ElleveFw\Library\Network;
+namespace EllevenFw\Library\Network;
 
 /**
  * Description of Response

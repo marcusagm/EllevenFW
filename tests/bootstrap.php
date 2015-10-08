@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Elleven Framework
  * Copyright 2015 Marcus Maia <contato@marcusmaia.com>.
@@ -20,4 +19,9 @@
 // TODO: check include path
 //ini_set('include_path', ini_get('include_path'));
 
-require dirname( __DIR__ ) . '/vendor/autoload.php';
+date_default_timezone_set('America/Sao_Paulo');
+
+if (file_exists(dirname(__DIR__) . '/vendor/autoload.php') === false) {
+    trigger_error('Autoload file not found.', E_USER_ERROR);
+}
+require dirname(__DIR__) . '/vendor/autoload.php';

@@ -13,7 +13,7 @@
  * @license	http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-namespace EllevenFW\Core\View\Types;
+namespace EllevenFw\Core\View\Types;
 
 use EllevenFw\Core\View\ViewInterface;
 
