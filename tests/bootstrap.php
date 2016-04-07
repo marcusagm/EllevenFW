@@ -21,6 +21,26 @@
 
 date_default_timezone_set('America/Sao_Paulo');
 
+if (!defined('DS')) {
+    define('DS', DIRECTORY_SEPARATOR);
+}
+
+define('TMP', sys_get_temp_dir() . DS);
+define('LOGS', TMP . 'logs' . DS);
+define('CACHE', TMP . 'cache' . DS);
+define('SESSIONS', TMP . 'sessions' . DS);
+
+define('EFW_ROOT', dirname(__DIR__) . DS);
+define('EFW_PATH', EFW_ROOT . 'src' . DS);
+define('EFW_TESTS', EFW_ROOT . 'tests' . DS);
+
+define('APP_NAME', 'AppTest');
+define('APP_PATH', EFW_TESTS . 'apptest' . DS);
+define('APP_PUBLIC', APP_PATH . 'public' . DS);
+define('APP_PUBLIC_CACHE', APP_PUBLIC . 'cache' . DS);
+define('APP_CONFIG', APP_PATH . 'config' . DS);
+define('APP_LOGS', APP_PATH . 'logs' . DS);
+
 if (file_exists(dirname(__DIR__) . '/vendor/autoload.php') === false) {
     trigger_error('Autoload file not found.', E_USER_ERROR);
 }

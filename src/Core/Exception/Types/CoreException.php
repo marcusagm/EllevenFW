@@ -22,7 +22,7 @@ use EllevenFw\Core\Exception\ExceptionInterface;
  *
  * @author Marcus Maia <contato@marcusmaia.com>
  */
-class CoreException implements ExceptionInterface
+class CoreException extends \Exception implements ExceptionInterface
 {
 
 }

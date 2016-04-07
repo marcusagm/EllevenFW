@@ -49,15 +49,9 @@ require EFW_ROOT . 'vendor' . DS . 'autoload.php';
 /**
  * Carrega as classes que serão usadas para iniciar a aplicação.
  */
-use EllevenFw\Core\Configure\Configure;
 use EllevenFw\Core\Routing\Dispatcher;
 use EllevenFw\Library\Network\Request;
 use EllevenFw\Library\Network\Response;
-
-/**
- * Carrega o arquivo de configuração.
- */
-Configure::load(null);
 
 /**
  * Inicia a aplicação realizando a analise da requisição identificando como proceder.
