@@ -29,7 +29,9 @@ class JsonConfigureEngineTest extends \PHPUnit_Framework_TestCase
      */
     protected function tearDown()
     {
-
+        if (file_exists($this->path . 'invalid.json')) {
+            unlink($this->path . 'invalid.json');
+        }
     }
 
     public function testDump()
@@ -175,6 +177,7 @@ class JsonConfigureEngineTest extends \PHPUnit_Framework_TestCase
     public function testReadWithInvalidJson()
     {
         $path = $this->path . 'invalid.json';
+        file_put_contents($path, '{{{{{');
         $engine = new JsonConfigureEngine($path);
         $engine->read();
     }

@@ -633,7 +633,7 @@ class Request
 
     /**
      *
-     * @return bollean|integer
+     * @return boolean|integer
      */
     public function getContentLength()
     {

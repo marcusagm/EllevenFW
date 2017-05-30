@@ -74,3 +74,9 @@ local.properties
 # Code Recommenders
 .recommenders/
 
+# Mac Files
+.DS_Store
+
+# PHP Storm
+.idea/
+

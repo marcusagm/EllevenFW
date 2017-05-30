@@ -41,7 +41,7 @@ class Dispatcher
      * @param Response $Response
      * @return void
      */
-    public function dispatch(Request $Request, Response $Response)
+    public static function dispatch(Request $Request, Response $Response)
     {
 
     }
