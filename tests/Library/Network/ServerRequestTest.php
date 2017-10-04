@@ -18,7 +18,7 @@ namespace EllevenFw\Test\Library\Network;
 
 use ReflectionProperty;
 use InvalidArgumentException;
-use EllevenFw\Library\Basic\Uri;
+use EllevenFw\Library\Network\Uri;
 use EllevenFw\Library\Network\ServerRequest;
 use EllevenFw\Library\Network\UploadedFile;
 

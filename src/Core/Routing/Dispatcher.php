@@ -15,34 +15,90 @@
 
 namespace EllevenFw\Core\Routing;
 
-use EllevenFw\Library\Network\Request;
-use EllevenFw\Library\Network\Response;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
+use EllevenFw\Library\Network\Uri;
+use EllevenFw\Core\Routing\MiddlewareInterface;
+use EllevenFw\Core\Routing\Request;
+use EllevenFw\Core\Routing\Mapper;
 
 /**
  * Description of Dispatcher
  *
  * @author Marcus Maia <contato@marcusmaia.com>
  */
-class Dispatcher
+class Dispatcher implements MiddlewareInterface
 {
+    /**
+     *
+     * @var  Uri[]
+     */
+    private $baseUrl = array();
 
     /**
      *
-     * @return void
+     * @param string|array $url
      */
-    public static function init()
+    public function setBaseUrl($url)
     {
+        $urlList = array();
+        if (is_string($url) === true) {
+            $urlList[] = $url;
+        } elseif (is_array($url) === true) {
+            $urlList = $url;
+        }
 
+        foreach ( $urlList as $uri ) {
+            $this->baseUrl[] = new Uri($uri);
+        }
     }
 
     /**
      *
-     * @param Request $Request
-     * @param Response $Response
-     * @return void
+     * @return array
      */
-    public static function dispatch(Request $Request, Response $Response)
+    public function getBaseUrl()
     {
+        return $this->baseUrl;
+    }
 
+    /**
+     *
+     * @param ServerRequestInterface $Request
+     * @param object $Handler
+     * @return ResponseInterface
+     */
+    public function process(
+        ServerRequestInterface $Request,
+        RequestHandlerInterface $Handler
+    ) {
+        $this->parseRewiteUri($Request->getUri());
+        $Handler->handle($Request);
+    }
+
+    /**
+     *
+     * @param ServerRequestInterface $Request
+     * @return ServerRequestInterface
+     */
+    public function parseRewiteUri(ServerRequestInterface $Request)
+    {
+        $queryParams = $Request->getQueryParams();
+        if (isset($queryParams['efw-path']) !== false) {
+            return new Request($Request);
+        }
+
+        $replace = array(
+            '/.*index\.php\//',
+            '/.*index\.php/'
+        );
+        foreach ( $this->baseUrl as $Uri ) {
+            $replace[] = '/' . preg_quote($Uri->getPath(), '/') . '/';
+        }
+        $queryParams['efw-path'] = preg_replace($replace, '/', $Request->getUri()->getPath());
+        $NewRequest = $Request->withQueryParams($queryParams);
+
+        return new $NewRequest;
     }
 }

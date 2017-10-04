@@ -18,7 +18,7 @@ namespace EllevenFw\Library\Network;
 use InvalidArgumentException;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
-use EllevenFw\Library\Basic\Uri;
+use EllevenFw\Library\Network\Uri;
 
 /**
  * Trait with common request behaviors.
@@ -65,7 +65,7 @@ trait RequestTrait
     private function initialize($uri = null, $method = null, $body = 'php://memory', array $headers = [])
     {
         $this->validateMethod($method);
-        $this->method = $method ?: '';
+        $this->method = $method ? $method : '';
         $this->uri    = $this->createUri($uri);
         $this->stream = $this->getStream($body, 'wb+');
         $this->setHeaders($headers);
@@ -293,7 +293,7 @@ trait RequestTrait
             ));
         }
     }
-    
+
     /**
      * Retrieve the host from the URI instance
      *

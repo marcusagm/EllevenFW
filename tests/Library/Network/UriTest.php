@@ -1,8 +1,8 @@
 <?php
 
-namespace EllevenFw\Test\Library\Basic;
+namespace EllevenFw\Test\Library\Network;
 
-use EllevenFw\Library\Basic\Uri;
+use EllevenFw\Library\Network\Uri;
 
 class UriTest extends \PHPUnit_Framework_TestCase
 {

@@ -64,6 +64,64 @@ class ConfigureTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
 
+    public function testRegistryByJsonFile()
+    {
+        $path = $this->path . 'valid.json';
+        Configure::registryByFile($path);
+        $this->assertInstanceOf(
+            'EllevenFw\Core\Configure\Engine\JsonConfigureEngine',
+            Configure::getEngine('valid')
+        );
+    }
+
+    public function testRegistryByPhpFile()
+    {
+        $path = $this->path . 'valid.php';
+        Configure::registryByFile($path);
+        $this->assertInstanceOf(
+            'EllevenFw\Core\Configure\Engine\PhpConfigureEngine',
+            Configure::getEngine('valid')
+        );
+    }
+
+    /**
+     * @expectedException EllevenFw\Core\Exception\Types\CoreException
+     * @expectedExceptionMessage Não foi possível carregar o arquivo de configuração "invalid.txt". O tipo de engine que deve ser usado não foi reconhecido.
+     */
+    public function testRegistryByInvalidFile()
+    {
+        $path = $this->path . 'invalid.txt';
+        Configure::registryByFile($path);
+    }
+
+    /**
+     * @expectedException EllevenFw\Core\Exception\Types\CoreException
+     * @expectedExceptionMessage Arquivo de configuração não existente.
+     */
+    public function testRegistryByNonExistentFile()
+    {
+        $path = $this->path . 'nonexistent';
+        Configure::registryByFile($path);
+    }
+
+    public function testIsValidFileJson()
+    {
+        $path = $this->path . 'valid.json';
+        $this->assertTrue(Configure::isValidFile($path));
+    }
+
+    public function testIsValidFilePhp()
+    {
+        $path = $this->path . 'valid.php';
+        $this->assertTrue(Configure::isValidFile($path));
+    }
+
+    public function testIsInvalidFile()
+    {
+        $path = $this->path . 'invalid.txt';
+        $this->assertFalse(Configure::isValidFile($path));
+    }
+
     public function testCheckEngine()
     {
         Configure::clear();

@@ -15,7 +15,14 @@
 
 namespace EllevenFw\Core\Routing;
 
+use InvalidArgumentException;
+use UnexpectedValueException;
+use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use EllevenFw\Library\Network\ServerRequest;
+use EllevenFw\Library\Network\ServerRequestUtils;
+use EllevenFw\Library\Network\UploadedFile;
+use EllevenFw\Library\Network\UploadedFileFactory;
 
 /**
  * Description of Request
@@ -33,13 +40,7 @@ class Request
 
     /**
      *
-     * @var EllevenFw\Library\Basic\Session
-     */
-    private $session;
-
-    /**
-     *
-     * @var Psr\Http\Message\ServerRequestInterface
+     * @var ServerRequest
      */
     private $serverRequest;
 
@@ -62,118 +63,32 @@ class Request
     private $encoding = array();
 
     /**
-     * Lista de endereços confiáveis como servidores de proxies.
      *
-     * Caso a aplicação esteja usando servidores com balanceamento de carga
-     * (load balances), algumas informações podem sofrer alterações devido ao
-     * proxy. Para que seja possível obter de forma confiável as informações
-     * corretas da requisição como o IP do cliente, porta, etc, é necessário
-     * indicar os endereços confiáveis.
-     *
-     * Para todos os endereços desta lista, será utilizado informações de
-     * cabeçalho personalizaveis para obter as informações reais. Um exemplo é
-     * que para obter o IP do cliente normalmente se utiliza a variável
-     * reservada $_SERVER['REMOTE_ADDR'], o valor desta variável de cabeçalho é
-     * preenchida obrigatóriamente pelo servidor ao receber a requisição, porem
-     * no caso de uso de servidores de balanceamento de carga, ocorre um
-     * redirecionamento, e esta variável é preenchida com o IP do servidor
-     * responsável pelo balanceamento, adicionando no cabeçalho a variável
-     * $_SERVER[''HTTP_X_FORWARDED_FOR'] com o valor original. Esta variável
-     * pode ser adicionada manualmente por qualquer um por não ser reservada,
-     * o que pode facilitar ataques.
-     *
-     * @var array
+     * @var string
      */
-    private $trustedProxies = array();
+    private $url = null;
 
     /**
      *
      */
-    public function __construct()
+    public function __construct(ServerRequestInterface $ServerRequest = null)
     {
-        $server = $this->filterInputGlobals(INPUT_SERVER);
-        $uploadedFiles = static::normalizeFiles($_FILES);
-        $env = $this->filterInputGlobals(INPUT_ENV);
+        if ($ServerRequest === null) {
+            $ServerRequest = ServerRequestUtils::createFromGlobals();
+        }
+        $this->serverRequest = $ServerRequest;
 
-        $this->serverRequest = new ServerRequest(
-            $server,
-            $uploadedFiles,
-            $this->getFullUrl($server),
-            $this->getMethod($server),
-            'php://input',
-            $server,
-            $this->filterInputGlobals(INPUT_COOKIE),
-            $this->filterInputGlobals(INPUT_GET),
-            $this->filterInputGlobals(INPUT_POST),
-            $this->getProtocol($server)
-        );
-
+        $env = ServerRequestUtils::filterInputGlobals(INPUT_ENV);
         $this->setEnvironment($env);
 
-        if (isset($server['HTTP_ACCEPT'])) {
-            $this->setAccept($server['HTTP_ACCEPT']);
+        $serverParams = $ServerRequest->getServerParams();
+        if (isset($serverParams['HTTP_ACCEPT'])) {
+            $this->setAccept($serverParams['HTTP_ACCEPT']);
         }
 
-        if (isset($server['HTTP_ACCEPT_LANGUAGE'])) {
-            $this->setAcceptLanguages($server['HTTP_ACCEPT_LANGUAGE']);
+        if (isset($serverParams['HTTP_ACCEPT_LANGUAGE'])) {
+            $this->setAcceptLanguages($serverParams['HTTP_ACCEPT_LANGUAGE']);
         }
-    }
-
-    private function filterInputGlobals($type)
-    {
-        $values = filter_input_array($type);
-        if ( is_array($values) === false ) {
-            return array();
-        }
-        return $values;
-    }
-
-    private function getProtocolFromGlobals($server = null)
-    {
-        if ($server == null) {
-            $server = filter_input_array(INPUT_SERVER);
-        }
-        if (! isset($server['SERVER_PROTOCOL'])) {
-            return '1.1';
-        }
-        if (! preg_match('#^(HTTP/)?(?P<version>[1-9]\d*(?:\.\d)?)$#', $server['SERVER_PROTOCOL'], $matches)) {
-            throw new UnexpectedValueException(sprintf(
-                'Unrecognized protocol version (%s)',
-                $server['SERVER_PROTOCOL']
-            ));
-        }
-        return $matches['version'];
-    }
-
-    /**
-     * Normalize uploaded files
-     *
-     * Transforms each value into an UploadedFileInterface instance, and ensures
-     * that nested arrays are normalized.
-     *
-     * @param array $files
-     * @return array
-     * @throws InvalidArgumentException for unrecognized values
-     */
-    public static function normalizeFiles(array $files)
-    {
-        $normalized = [];
-        foreach ($files as $key => $value) {
-            if ($value instanceof UploadedFileInterface) {
-                $normalized[$key] = $value;
-                continue;
-            }
-            if (is_array($value) && isset($value['tmp_name'])) {
-                $normalized[$key] = self::createUploadedFileFromSpec($value);
-                continue;
-            }
-            if (is_array($value)) {
-                $normalized[$key] = self::normalizeFiles($value);
-                continue;
-            }
-            throw new InvalidArgumentException('Invalid value in files specification');
-        }
-        return $normalized;
     }
 
     /**
@@ -243,6 +158,15 @@ class Request
             return $files[$name];
         }
         return false;
+    }
+
+    /**
+     *
+     * @return ServerRequest
+     */
+    public function getServerRequest()
+    {
+        return $this->serverRequest;
     }
 
     /**
@@ -325,65 +249,27 @@ class Request
 
     /**
      *
-     * @param array $proxies
-     * @return void
-     */
-    public function setTrustedProxies(array $proxies)
-    {
-        $this->trustedProxies = $proxies;
-    }
-
-    /**
-     *
-     * @return array
-     */
-    public function getTrustedProxies()
-    {
-        return $this->trustedProxies;
-    }
-
-    /**
-     *
-     * @param string $address
-     * @return boolean
-     */
-    public function isFromTrustedProxy($server = null)
-    {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
-        if (empty($this->getTrustedProxies())) {
-            return false;
-        }
-        $address = $server['REMOTE_ADDR'];
-        return in_array($address, $this->trustedProxies);
-    }
-
-    /**
-     *
      * @return string
      */
-    public function getClientIp($server = null)
+    public function getClientIp()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
         $ipAddress = null;
-        if ($this->isFromTrustedProxy() && $server['HTTP_X_FORWARDED_FOR']) {
+        $server = $this->getServer();
+        if (ServerRequestUtils::isFromTrustedProxy($server) && $this->getServerVar('HTTP_X_FORWARDED_FOR')) {
             $ipAddress = preg_replace(
                 '/(?:,.*)/',
                 '',
-                $server('HTTP_X_FORWARDED_FOR')
+                $this->getServerVar('HTTP_X_FORWARDED_FOR')
             );
         } else {
-            if ($server('HTTP_CLIENT_IP')) {
-                $ipAddress = $server('HTTP_CLIENT_IP');
+            if ($this->getServerVar('HTTP_CLIENT_IP')) {
+                $ipAddress = $this->getServerVar('HTTP_CLIENT_IP');
             } else {
-                $ipAddress = $server('REMOTE_ADDR');
+                $ipAddress = $this->getServerVar('REMOTE_ADDR');
             }
         }
-        if ($server('HTTP_CLIENTADDRESS')) {
-            $tmpIpAddr = $server('HTTP_CLIENTADDRESS');
+        if ($this->getServerVar('HTTP_CLIENTADDRESS')) {
+            $tmpIpAddr = $this->getServerVar('HTTP_CLIENTADDRESS');
             if (!empty($tmpIpAddr)) {
                 $ipAddress = preg_replace('/(?:,.*)/', '', $tmpIpAddr);
             }
@@ -398,23 +284,9 @@ class Request
      *
      * @return string
      */
-    public function getMethod($server = null)
+    public function getMethod()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
-        if (isset($server('REQUEST_METHOD')) === false) {
-            return 'GET';
-        }
-
-        $method = strtoupper($server('REQUEST_METHOD'));
-
-        if ($method === 'POST') {
-            if ($server('X-HTTP-METHOD-OVERRIDE') !== false) {
-                $method = strtoupper($server('X-HTTP-METHOD-OVERRIDE'));
-            }
-        }
-        return $method;
+        return $this->serverRequest->getMethod();
     }
 
     /**
@@ -438,58 +310,37 @@ class Request
 
     /**
      *
-     * @todo Corrigir Exceção
-     * @todo Adicionar verificação de hosts confiáveis para evitar ataques de
-     * injeção de cabeçalhos (Host Header Injection Attacks)
      * @return string
      */
-    public function getHost($server = null)
+    public function getHost()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
-        $host = '';
-        if ($this->isFromTrustedProxy() && $server('HTTP_X_FORWARDED_HOST')) {
-            $host = $server('HTTP_X_FORWARDED_HOST');
-        } elseif ($server('HTTP_HOST')) {
-            $host = $server('HTTP_HOST');
-        } elseif ($server('SERVER_NAME')) {
-            $host = $server('SERVER_NAME');
-        } else {
-            $host = $server('SERVER_ADDR');
-        }
-        return $host;
+        return $this->serverRequest->getUri()->getHost();
     }
 
     /**
      *
      * @return string
      */
-    public function getPort($server = null)
+    public function getPort()
     {
-        if ($server == null) {
-            $server = $this->getServer();
+        $port = $this->serverRequest->getUri()->getPort();
+        if ($port === null) {
+            if ($this->getScheme() === 'https') {
+                return '443';
+            } else {
+                return '80';
+            }
         }
-        if ($this->isFromTrustedProxy() && $server('HTTP_X_FORWARDED_PORT')) {
-            return $server('HTTP_X_FORWARDED_PORT');
-        }
-        return $server('SERVER_PORT');
+        return $port;
     }
 
     /**
      *
      * @return string
      */
-    public function getScheme($server = null)
+    public function getScheme()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
-        if ($this->isFromTrustedProxy() && $server('HTTP_X_FORWARDED_PROTO') !== false) {
-            return $server('HTTP_X_FORWARDED_PROTO');
-        }
-        $https = $server('HTTPS');
-        return empty($https) === false && $https === 'on' ? 'https' : 'http';
+        return $this->serverRequest->getUri()->getScheme();
     }
 
     /**
@@ -554,6 +405,10 @@ class Request
         return in_array($type, $this->accepts);
     }
 
+    /**
+     *
+     * @param string $acceptLanguagesString
+     */
     public function setAcceptLanguages($acceptLanguagesString)
     {
         $raw = $this->parseAcceptWithQualifier($acceptLanguagesString);
@@ -593,35 +448,19 @@ class Request
      *
      * @return string
      */
-    public function getProtocol($server = null)
+    public function getProtocol()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
-        if (! isset($server['SERVER_PROTOCOL'])) {
-            return '1.1';
-        }
-        $matches = array();
-        if (! preg_match('#^(HTTP/)?(?P<version>[1-9]\d*(?:\.\d)?)$#', $server['SERVER_PROTOCOL'], $matches)) {
-            throw new UnexpectedValueException(sprintf(
-                'Unrecognized protocol version (%s)',
-                $server['SERVER_PROTOCOL']
-            ));
-        }
-        return $matches['version'];
+        return $this->serverRequest->getProtocolVersion();
     }
 
     /**
      *
      * @return string
      */
-    public function getEncoding($server = null)
+    public function getEncoding()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
         if (empty($this->encoding)) {
-            $encoding = $server('HTTP_ACCEPT_ENCODING');
+            $encoding = $this->getServerVar('HTTP_ACCEPT_ENCODING');
             $raw = $this->parseAcceptWithQualifier($encoding);
             $cleanList = array();
             foreach ($raw as $encoding) {
@@ -636,16 +475,13 @@ class Request
      *
      * @return boolean|integer
      */
-    public function getContentLength($server = null)
+    public function getContentLength()
     {
-        if ($server == null) {
-            $server = $this->getServer();
+        if ($this->getServerVar('HTTP_CONTENT_LENGTH') !== false) {
+            return (int) $this->getServerVar('HTTP_CONTENT_LENGTH');
         }
-        if ($server('HTTP_CONTENT_LENGTH') !== false) {
-            return (int) $server('HTTP_CONTENT_LENGTH');
-        }
-        if ($server('CONTENT_LENGTH') !== false) {
-            return (int) $server('CONTENT_LENGTH');
+        if ($this->getServerVar('CONTENT_LENGTH') !== false) {
+            return (int) $this->getServerVar('CONTENT_LENGTH');
         }
         return false;
     }
@@ -654,16 +490,13 @@ class Request
      *
      * @return boolean|string
      */
-    public function getContentType($server = null)
+    public function getContentType()
     {
-        if ($server == null) {
-            $server = $this->getServer();
+        if ($this->getServerVar('HTTP_CONTENT_TYPE') !== false) {
+            return $this->getServerVar('HTTP_CONTENT_TYPE');
         }
-        if ($server('HTTP_CONTENT_TYPE') !== false) {
-            return $server('HTTP_CONTENT_TYPE');
-        }
-        if ($server('CONTENT_TYPE') !== false) {
-            return $server('CONTENT_TYPE');
+        if ($this->getServerVar('CONTENT_TYPE') !== false) {
+            return $this->getServerVar('CONTENT_TYPE');
         }
         return false;
     }
@@ -672,46 +505,36 @@ class Request
      *
      * @return boolean|string
      */
-    public function getUser($server = null)
+    public function getUser()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
-        if ($server('PHP_AUTH_USER')) {
-            return $server('PHP_AUTH_USER');
-        }
-        return false;
+        return $this->serverRequest->getUri()->getUser();
     }
 
     /**
      *
      * @return boolean|string
      */
-    public function getPassword($server = null)
+    public function getPassword()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
-        if ($server('PHP_AUTH_PW')){
-            return $server('PHP_AUTH_PW');
-        }
-        return false;
+        return $this->serverRequest->getUri()->getPassword();
     }
 
-    public function getRequestTime($server = null)
+    /**
+     *
+     * @return string
+     */
+    public function getRequestTime()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
-        return $server('REQUEST_TIME');
+        return $this->getServerVar('REQUEST_TIME');
     }
 
-    public function isXmlHttpRequest($server = null)
+    /**
+     *
+     * @return boolean
+     */
+    public function isXmlHttpRequest()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
-        $requestedWith = $server('HTTP_X_REQUESTED_WITH');
+        $requestedWith = $this->getServerVar('HTTP_X_REQUESTED_WITH');
         if ($requestedWith !== false) {
             $requestedWith = strtolower($requestedWith);
         }
@@ -720,106 +543,48 @@ class Request
 
     /**
      *
-     * @return void
+     * @return string
      */
-    public function resetUrlPath()
+    public function getPath()
     {
-        $this->pathUrl = null;
+        return $this->serverRequest->getUri()->getPath();
     }
 
     /**
      *
      * @return string
      */
-    public function getUrlPath($server = null)
+    public function getQueryString()
     {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
-        if ($this->pathUrl !== null) {
-            return $this->pathUrl;
-        }
-
-        if ($server('PATH_INFO') !== false) {
-            $uri = $server('PATH_INFO');
-        } elseif ($server('REQUEST_URI') !== false) {
-            $requestUri = $server('REQUEST_URI');
-            if (strpos($requestUri, '://') === false) {
-                $uri = $requestUri;
-            } else {
-                $qPosition = strpos($requestUri, '?');
-                if ($qPosition !== false && strpos($requestUri, '://') > $qPosition) {
-                    $uri = $requestUri;
-                } else {
-                    $scheme = $this->getScheme();
-                    $host = $this->getHost();
-                    $uri = substr(
-                        $requestUri,
-                        strlen($scheme.'://'.$host)
-                    );
-                }
-            }
-        } elseif ($server('PHP_SELF') !== false && $server('SCRIPT_NAME') !== false) {
-            $phpSelf = $server('PHP_SELF');
-            $scriptName = $server('SCRIPT_NAME');
-            $uri = str_replace($scriptName, '', $phpSelf);
-        } elseif ($server('HTTP_X_REWRITE_URL') !== false) {
-            $uri = $server('HTTP_X_REWRITE_URL');
-        } else {
-            $var = $server('argv');
-            $uri = $var[0];
-        }
-
-        if (strpos($uri, '?') !== false) {
-            list($uri) = explode('?', $uri, 2);
-        }
-
-        if (empty($uri) || $uri === '/' || $uri === '//' || $uri === '/index.php') {
-            $uri = '/';
-        }
-
-        $this->pathUrl = $uri;
-
-        return $uri;
+        return $this->serverRequest->getUri()->getQuery();
     }
 
-    public function getQueryString($query = null)
+    /**
+     *
+     * @return string
+     */
+    public function getFullUrl()
     {
-        if ($this->queryString !== null) {
-            return $this->queryString;
+        if ($this->url) {
+            return $this->url;
         }
 
-        if ($query == null) {
-            $query = $this->getQuery();
-        }
-        if (empty($query)) {
-            return '';
-        }
-        $this->queryString = http_build_query($query, null, '&', PHP_QUERY_RFC3986);
-        return $this->queryString;
-    }
-
-    public function getFullUrl($server = null, $query = null)
-    {
-        if ($server == null) {
-            $server = $this->getServer();
-        }
         $url = '';
-        $url.= $this->getScheme($server) . '://';
+        $url.= $this->getScheme() . '://';
 
-        if ($this->getUser($server) !== false && $this->getPassword($server) !== false) {
-            $url.= $this->getUser($server) . ':';
-            $url.= $this->getPassword($server) . '@';
+        if ($this->getUser() !== '' && $this->getPassword() !== '') {
+            $url.= $this->getUser() . ':';
+            $url.= $this->getPassword() . '@';
         }
-        $url.= $this->getHost($server);
+        $url.= $this->getHost();
 
-        if ($this->getPort($server) !== false && $this->getPort($server) !== '80' && $this->getPort($server) !== '443') {
-            $url.= ':' . $this->getPort($server);
+        if ($this->getPort() !== null && $this->getPort() !== '80' && $this->getPort() !== '443') {
+            $url.= ':' . $this->getPort();
         }
 
-        $url.= $this->getUrlPath($server);
+        $url.= $this->getPath();
 
-        $queryString = $this->getQueryString($server);
+        $queryString = $this->getQueryString();
         $url.= $queryString !== '' ? '?' . $queryString : '';
 
         $this->url = $url;

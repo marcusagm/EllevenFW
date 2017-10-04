@@ -13,7 +13,7 @@
  * @license     http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-namespace EllevenFw\Library\Basic;
+namespace EllevenFw\Library\Network;
 
 use InvalidArgumentException;
 use Psr\Http\Message\UriInterface as UriInterface;

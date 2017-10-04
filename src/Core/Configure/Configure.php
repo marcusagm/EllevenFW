@@ -17,6 +17,8 @@ namespace EllevenFw\Core\Configure;
 
 use EllevenFw\Core\Exception\Types\CoreException;
 Use EllevenFw\Core\Configure\Engine\ConfigureEngineInterface;
+use EllevenFw\Core\Configure\Engine\PhpConfigureEngine;
+use EllevenFw\Core\Configure\Engine\JsonConfigureEngine;
 
 /**
  * Description of Configure
@@ -39,6 +41,15 @@ class Configure
 
     /**
      *
+     * @var array
+     */
+    private static $extensions = array(
+        'json' => 'EllevenFw\Core\Configure\Engine\JsonConfigureEngine',
+        'php' => 'EllevenFw\Core\Configure\Engine\PhpConfigureEngine',
+    );
+
+    /**
+     *
      * @param string $name
      * @param EllevenFw\Core\Configure\Engine\ConfigureEngineInterface $engine
      */
@@ -46,6 +57,38 @@ class Configure
     {
         self::$engines[$name] = $engine;
         self::$data[$name] = $engine->read();
+    }
+
+    /**
+     *
+     * @param string $path
+     * @throws CoreException
+     */
+    public static function registryByFile($path)
+    {
+        if (file_exists($path) === false) {
+            throw new CoreException('Arquivo de configuração não existente.');
+        }
+
+        $basename = pathinfo($path, PATHINFO_BASENAME);
+        $filename = pathinfo($path, PATHINFO_FILENAME);
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+
+        if (isset(self::$extensions[$extension]) === false) {
+            throw new CoreException(sprintf(
+                'Não foi possível carregar o arquivo de configuração "%s".'
+                . ' O tipo de engine que deve ser usado não foi reconhecido.',
+                $basename
+            ));
+        }
+
+        static::registry($filename, new self::$extensions[$extension]($path));
+    }
+
+    public static function isValidFile($path)
+    {
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        return isset(self::$extensions[$extension]);
     }
 
     /**

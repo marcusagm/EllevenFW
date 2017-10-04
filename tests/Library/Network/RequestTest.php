@@ -17,7 +17,7 @@ namespace EllevenFw\Test\Library\Network;
 
 use InvalidArgumentException;
 use Psr\Http\Message\UriInterface;
-use EllevenFw\Library\Basic\Uri;
+use EllevenFw\Library\NetWork\Uri;
 use EllevenFw\Library\Network\Stream;
 use EllevenFw\Library\Network\Request;
 
