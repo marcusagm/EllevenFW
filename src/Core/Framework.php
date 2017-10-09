@@ -29,8 +29,6 @@ use EllevenFw\Core\Configure\Configure;
  */
 class Framework
 {
-    private $environment;
-
     public function init()
     {
         $this->loadConfigs(APP_CONFIG);
@@ -48,14 +46,21 @@ class Framework
         $Directory = new DirectoryIterator($path);
         foreach ($Directory as $File) {
             $filePath = $File->getPathname();
+            $fileName = $File->getBasename();
             if (Configure::isValidFile($filePath)) {
-                Configure::registryByFile($filePath);
+                Configure::registryByFile($fileName, $filePath);
             }
         }
     }
 
     public function loadEnvironment()
     {
-
+        // Configurar Logs
+        // Configurar Errors
+        // Configurar Datasoucers
+        // Configurar Rotes
+        // Configurar Assests
+        // Configurar Mailer
+        // Configurar Sessions
     }
 }

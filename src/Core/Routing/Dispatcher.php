@@ -66,7 +66,7 @@ class Dispatcher implements MiddlewareInterface
     /**
      *
      * @param ServerRequestInterface $Request
-     * @param object $Handler
+     * @param RequestHandlerInterface $Handler
      * @return ResponseInterface
      */
     public function process(
@@ -99,6 +99,6 @@ class Dispatcher implements MiddlewareInterface
         $queryParams['efw-path'] = preg_replace($replace, '/', $Request->getUri()->getPath());
         $NewRequest = $Request->withQueryParams($queryParams);
 
-        return new $NewRequest;
+        return new Request($NewRequest);
     }
 }

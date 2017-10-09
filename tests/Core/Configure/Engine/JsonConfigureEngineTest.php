@@ -20,7 +20,7 @@ class JsonConfigureEngineTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->path = APP_CONFIG;
+        $this->path = APP_CONFIG . 'tests' . DS;
     }
 
     /**

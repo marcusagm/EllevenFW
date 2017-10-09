@@ -16,9 +16,7 @@
 namespace EllevenFw\Core\Configure;
 
 use EllevenFw\Core\Exception\Types\CoreException;
-Use EllevenFw\Core\Configure\Engine\ConfigureEngineInterface;
-use EllevenFw\Core\Configure\Engine\PhpConfigureEngine;
-use EllevenFw\Core\Configure\Engine\JsonConfigureEngine;
+use EllevenFw\Core\Configure\Engine\ConfigureEngineInterface;
 
 /**
  * Description of Configure
@@ -55,26 +53,26 @@ class Configure
      */
     public static function registry($name, ConfigureEngineInterface $engine)
     {
-        self::$engines[$name] = $engine;
-        self::$data[$name] = $engine->read();
+        static::$engines[$name] = $engine;
+        static::$data[$name] = $engine->read();
     }
 
     /**
      *
+     * @param string $name
      * @param string $path
      * @throws CoreException
      */
-    public static function registryByFile($path)
+    public static function registryByFile($name, $path)
     {
         if (file_exists($path) === false) {
             throw new CoreException('Arquivo de configuração não existente.');
         }
 
         $basename = pathinfo($path, PATHINFO_BASENAME);
-        $filename = pathinfo($path, PATHINFO_FILENAME);
         $extension = pathinfo($path, PATHINFO_EXTENSION);
 
-        if (isset(self::$extensions[$extension]) === false) {
+        if (isset(static::$extensions[$extension]) === false) {
             throw new CoreException(sprintf(
                 'Não foi possível carregar o arquivo de configuração "%s".'
                 . ' O tipo de engine que deve ser usado não foi reconhecido.',
@@ -82,13 +80,13 @@ class Configure
             ));
         }
 
-        static::registry($filename, new self::$extensions[$extension]($path));
+        static::registry($name, new static::$extensions[$extension]($path));
     }
 
     public static function isValidFile($path)
     {
         $extension = pathinfo($path, PATHINFO_EXTENSION);
-        return isset(self::$extensions[$extension]);
+        return isset(static::$extensions[$extension]);
     }
 
     /**
@@ -99,11 +97,11 @@ class Configure
      */
     public static function checkEngine($name, ConfigureEngineInterface $engine)
     {
-        if(isset(self::$engines[$name]) === false)  {
+        if(isset(static::$engines[$name]) === false)  {
             return false;
         }
 
-        return self::$engines[$name] === $engine;
+        return static::$engines[$name] === $engine;
     }
 
     /**
@@ -114,14 +112,14 @@ class Configure
      */
     public static function getEngine($name)
     {
-        if(isset(self::$engines[$name]) === false)  {
+        if(isset(static::$engines[$name]) === false)  {
             throw new CoreException(sprintf(
                 'O mecanismo de configurações com o nome "%s" não foi encontrado.',
                 $name
             ));
         }
 
-        return self::$engines[$name];
+        return static::$engines[$name];
     }
 
     /**
@@ -138,8 +136,8 @@ class Configure
                 $data
             ));
         }
-        self::$engines[$name]->write($data);
-        self::$data[$name] = self::$engines[$name]->read();
+        static::$engines[$name]->write($data);
+        static::$data[$name] = static::$engines[$name]->read();
     }
 
     /**
@@ -153,18 +151,18 @@ class Configure
      */
     public static function read($name, $key, $default = null)
     {
-        if (isset(self::$data[$name]) === false) {
+        if (isset(static::$data[$name]) === false) {
             throw new CoreException(sprintf(
                 'O conjunto de configurações com o nome "%s" não foi encontrado.',
                 $name
             ));
         }
-        $data = self::$data[$name];
+        $data = static::$data[$name];
 
         if ($key === null || $key === '') {
             return $default;
         }
-        $parts = self::parseKey($key);
+        $parts = static::parseKey($key);
 
         foreach ($parts as $key) {
             if (isset($data[$key])) {
@@ -179,16 +177,16 @@ class Configure
     public static function readAll($name = null)
     {
         if ($name === null) {
-            return self::$data;
+            return static::$data;
         }
 
-        if (isset(self::$data[$name]) === false) {
+        if (isset(static::$data[$name]) === false) {
             throw new CoreException(sprintf(
                 'O conjunto de configurações com o nome "%s" não foi encontrado.',
                 $name
             ));
         }
-        return self::$data[$name];
+        return static::$data[$name];
     }
 
     /**
@@ -201,8 +199,8 @@ class Configure
      */
     public static function check($name, $key, $value)
     {
-        $data = self::$data[$name];
-        $parts = self::parseKey($key);
+        $data = static::$data[$name];
+        $parts = static::parseKey($key);
 
         foreach ($parts as $key) {
             if (isset($data[$key])) {
@@ -221,10 +219,10 @@ class Configure
     public static function dump($name = null)
     {
         if ($name !== null) {
-            self::$engines[$name]->dump();
+            static::$engines[$name]->dump();
         }
 
-        foreach (self::$engines as $engine) {
+        foreach (static::$engines as $engine) {
             $engine->dump();
         }
     }
@@ -256,7 +254,7 @@ class Configure
      */
     public static function clear()
     {
-        self::$data = array();
-        self::$engines = array();
+        static::$data = array();
+        static::$engines = array();
     }
 }

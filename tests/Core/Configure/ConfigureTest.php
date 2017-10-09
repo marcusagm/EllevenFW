@@ -22,7 +22,7 @@ class ConfigureTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->path = APP_CONFIG;
+        $this->path = APP_CONFIG . 'tests' . DS;
     }
 
     /**
@@ -67,20 +67,20 @@ class ConfigureTest extends \PHPUnit_Framework_TestCase
     public function testRegistryByJsonFile()
     {
         $path = $this->path . 'valid.json';
-        Configure::registryByFile($path);
+        Configure::registryByFile('Valid', $path);
         $this->assertInstanceOf(
             'EllevenFw\Core\Configure\Engine\JsonConfigureEngine',
-            Configure::getEngine('valid')
+            Configure::getEngine('Valid')
         );
     }
 
     public function testRegistryByPhpFile()
     {
         $path = $this->path . 'valid.php';
-        Configure::registryByFile($path);
+        Configure::registryByFile('Valid', $path);
         $this->assertInstanceOf(
             'EllevenFw\Core\Configure\Engine\PhpConfigureEngine',
-            Configure::getEngine('valid')
+            Configure::getEngine('Valid')
         );
     }
 
@@ -91,7 +91,7 @@ class ConfigureTest extends \PHPUnit_Framework_TestCase
     public function testRegistryByInvalidFile()
     {
         $path = $this->path . 'invalid.txt';
-        Configure::registryByFile($path);
+        Configure::registryByFile('Invalid', $path);
     }
 
     /**
@@ -101,7 +101,7 @@ class ConfigureTest extends \PHPUnit_Framework_TestCase
     public function testRegistryByNonExistentFile()
     {
         $path = $this->path . 'nonexistent';
-        Configure::registryByFile($path);
+        Configure::registryByFile('NonExistent', $path);
     }
 
     public function testIsValidFileJson()
@@ -419,5 +419,10 @@ class ConfigureTest extends \PHPUnit_Framework_TestCase
         $actual = Configure::readAll();
 
         $this->assertEquals($expected, $actual);
+    }
+
+    public function testAppConfigure()
+    {
+
     }
 }
