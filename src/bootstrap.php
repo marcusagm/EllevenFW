@@ -49,15 +49,15 @@ require EFW_ROOT . 'vendor' . DS . 'autoload.php';
 /**
  * Carrega as classes que serão usadas para iniciar a aplicação.
  */
+use EllevenFw\Core\Framework;
 use EllevenFw\Core\Routing\Dispatcher;
-use EllevenFw\Core\Routing\Mapper;
 use EllevenFw\Library\Network\ServerRequestUtils;
 
 /**
  * Inicia a aplicação realizando a analise da requisição identificando como proceder.
  */
-$Dispatcher = new Dispatcher();
-$Dispatcher->process(
+$Framework = new Framework();
+$Framework->process(
     ServerRequestUtils::createFromGlobals(),
-    new Mapper()
+    new Dispatcher()
 );

@@ -19,22 +19,31 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use EllevenFw\Library\Network\Uri;
-use EllevenFw\Core\Routing\MiddlewareInterface;
 use EllevenFw\Core\Routing\Request;
 use EllevenFw\Core\Routing\Mapper;
+use EllevenFw\Core\Routing\RequestHandlerInterface;
 
 /**
  * Description of Dispatcher
  *
  * @author Marcus Maia <contato@marcusmaia.com>
  */
-class Dispatcher implements MiddlewareInterface
+class Dispatcher implements RequestHandlerInterface
 {
     /**
      *
      * @var  Uri[]
      */
     private $baseUrl = array();
+
+    /**
+     * {@inheritdoc}
+     */
+    public function handle(ServerRequestInterface $Request)
+    {
+        $Request = $this->parseRewiteUri($Request->getUri());
+        $Mapper = new Mapper($Request);
+    }
 
     /**
      *
@@ -61,20 +70,6 @@ class Dispatcher implements MiddlewareInterface
     public function getBaseUrl()
     {
         return $this->baseUrl;
-    }
-
-    /**
-     *
-     * @param ServerRequestInterface $Request
-     * @param RequestHandlerInterface $Handler
-     * @return ResponseInterface
-     */
-    public function process(
-        ServerRequestInterface $Request,
-        RequestHandlerInterface $Handler
-    ) {
-        $this->parseRewiteUri($Request->getUri());
-        $Handler->handle($Request);
     }
 
     /**

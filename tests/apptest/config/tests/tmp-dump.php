@@ -1,15 +1,16 @@
 <?php
-return array (
-  'Json' => 'value',
-  'Deep' => 
-  array (
-    'Deeper' => 
-    array (
-      'Deepest' => 'buried',
+
+return array(
+    'Json' => 'value',
+    'Deep' =>
+    array(
+        'Deeper' =>
+        array(
+            'Deepest' => 'buried',
+        ),
     ),
-  ),
-  'TestAcl' => 
-  array (
-    'classname' => 'Original',
-  ),
+    'TestAcl' =>
+    array(
+        'classname' => 'Original',
+    ),
 );

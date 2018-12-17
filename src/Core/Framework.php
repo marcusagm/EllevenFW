@@ -17,28 +17,30 @@
 namespace EllevenFw\Core;
 
 use DirectoryIterator;
-use EllevenFw\Library\Network\ServerRequestUtils;
-use EllevenFw\Core\Routing\Dispatcher;
-use EllevenFw\Core\Routing\Mapper;
 use EllevenFw\Core\Configure\Configure;
+use EllevenFw\Core\Routing\MiddlewareInterface;
 
 /**
  * Description of Framework
  *
  * @author Marcus Maia <contato@marcusmaia.com>
  */
-class Framework
+class Framework implements MiddlewareInterface
 {
-    public function init()
-    {
+    /**
+     *
+     * @param ServerRequestInterface $Request
+     * @param RequestHandlerInterface $Handler
+     * @return ResponseInterface
+     */
+    public function process(
+        ServerRequestInterface $Request,
+        RequestHandlerInterface $Handler
+    ) {
         $this->loadConfigs(APP_CONFIG);
         $this->loadEnvironment();
 
-        $Dispatcher = new Dispatcher();
-        $Dispatcher->process(
-            ServerRequestUtils::createFromGlobals(),
-            new Mapper()
-        );
+        return $Handler->handle($Request);
     }
 
     public function loadConfigs($path)

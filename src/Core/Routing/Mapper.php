@@ -15,22 +15,14 @@
 
 namespace EllevenFw\Core\Routing;
 
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use EllevenFw\Core\Routing\RequestHandlerInterface;
 
 /**
  * Description of Mapper
  *
  * @author Marcus Maia <contato@marcusmaia.com>
  */
-class Mapper implements RequestHandlerInterface
+class Mapper
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function handle(ServerRequestInterface $request)
-    {
-        
-    }
+
 }
