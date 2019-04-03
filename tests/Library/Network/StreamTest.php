@@ -18,9 +18,10 @@ namespace EllevenFw\Test\Library\Network;
 use InvalidArgumentException;
 use ReflectionProperty;
 use RuntimeException;
+use PHPUnit\Framework\TestCase;
 use EllevenFw\Library\Network\Stream;
 
-class StreamTest extends \PHPUnit_Framework_TestCase
+class StreamTest extends TestCase
 {
     public static $isFReadError = false;
     public static $isFWriteError = false;
@@ -36,13 +37,13 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     protected $stream;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->tmpnam = null;
         $this->stream = new Stream('php://memory', 'wb+');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         if ($this->tmpnam && file_exists($this->tmpnam)) {
             unlink($this->tmpnam);
@@ -88,11 +89,10 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($resource, $stream->detach());
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testPassingInvalidStreamResourceToConstructorRaisesException()
     {
+        $this->expectException(\InvalidArgumentException::class);
+        // $this->expectExceptionMessage('Unsupported HTTP method');
         $stream = new Stream(['  THIS WILL NOT WORK  ']);
     }
 
@@ -157,12 +157,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(2, $stream->tell());
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage No resource
-     */
     public function testTellRaisesExceptionIfResourceIsDetached()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('No resource');
+
         $this->tmpnam = tempnam(sys_get_temp_dir(), 'diac');
         file_put_contents($this->tmpnam, 'FOO BAR');
         $resource = fopen($this->tmpnam, 'wb+');
@@ -250,12 +249,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(0, $stream->tell());
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage No resource
-     */
     public function testSeekRaisesExceptionWhenStreamIsDetached()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('No resource');
+
         $this->tmpnam = tempnam(sys_get_temp_dir(), 'diac');
         file_put_contents($this->tmpnam, 'FOO BAR');
         $resource = fopen($this->tmpnam, 'wb+');
@@ -380,12 +378,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($flag, $stream->isReadable());
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage No resource
-     */
     public function testWriteRaisesExceptionWhenStreamIsDetached()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('No resource');
+
         $this->tmpnam = tempnam(sys_get_temp_dir(), 'diac');
         file_put_contents($this->tmpnam, 'FOO BAR');
         $resource = fopen($this->tmpnam, 'wb+');
@@ -395,12 +392,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->write('bar');
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Stream is not writable
-     */
     public function testWriteRaisesExceptionWhenStreamIsNotWritable()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Stream is not writable');
+
         $stream = new Stream('php://memory', 'r');
 
         $stream->write('bar');
@@ -417,12 +413,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($stream->isReadable());
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage No resource
-     */
     public function testReadRaisesExceptionWhenStreamIsDetached()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('No resource');
+
         $this->tmpnam = tempnam(sys_get_temp_dir(), 'diac');
         file_put_contents($this->tmpnam, 'FOO BAR');
         $resource = fopen($this->tmpnam, 'r');
@@ -444,11 +439,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('', $stream->read(4096));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testGetContentsRisesExceptionIfStreamIsNotReadable()
     {
+        $this->expectException(\RuntimeException::class);
+        // $this->expectExceptionMessage('No resource');
+
         $this->tmpnam = tempnam(sys_get_temp_dir(), 'diac');
         file_put_contents($this->tmpnam, 'FOO BAR');
         $resource = fopen($this->tmpnam, 'w');
@@ -474,11 +469,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider invalidResources
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Invalid stream
      */
     public function testAttachWithNonStringNonResourceRaisesException($resource)
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid stream');
+
         $this->stream->attach($resource);
     }
 
@@ -581,13 +577,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($expected['size'], $stream->getSize());
     }
 
-    /**
-     * @group 67
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage stream
-     */
     public function testRaisesExceptionOnConstructionForNonStreamResources()
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('stream');
+
         $resource = $this->getResourceFor67();
         if (false === $resource) {
             $this->markTestSkipped('No acceptable resource available to test ' . __METHOD__);
@@ -596,13 +590,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         new Stream($resource);
     }
 
-    /**
-     * @group 67
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage stream
-     */
     public function testRaisesExceptionOnAttachForNonStreamResources()
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('stream');
+
         $resource = $this->getResourceFor67();
         if (false === $resource) {
             $this->markTestSkipped('No acceptable resource available to test ' . __METHOD__);
@@ -659,12 +651,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(is_resource($handle));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Error reading stream
-     */
     public function testStreamReadingFreadError()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Error reading stream');
+
         self::$isFReadError = true;
         $r = fopen('php://temp', 'r');
         $stream = new Stream($r);
@@ -681,12 +672,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->close();
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Error writing to stream
-     */
     public function testStreamReadingFwriteError()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Error writing to stream');
+
         self::$isFWriteError = true;
         $r = fopen('php://temp', 'w');
         $stream = new Stream($r);
@@ -703,12 +693,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->close();
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Stream is not readable
-     */
     public function testStreamIsNotReadable()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Stream is not readable');
+
         $this->tmpnam = tempnam(sys_get_temp_dir(), 'diac');
         $resource = fopen($this->tmpnam, 'a');
         $stream = new Stream($resource);
@@ -722,12 +711,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->close();
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Error reading from stream
-     */
     public function testStreamFailOnGetContents()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Error reading from stream');
+
         self::$isStreamGetContentError = true;
         $r = fopen('php://temp', 'r');
         $stream = new Stream($r);
@@ -744,12 +732,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->close();
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Error occurred during tell operation
-     */
     public function testStreamFailOnTell()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Error occurred during tell operation');
+
         self::$isFTellError = true;
         $r = fopen('php://temp', 'r');
         $stream = new Stream($r);
@@ -766,12 +753,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->close();
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Stream is not seekable
-     */
     public function testStreamFailOnIsSeekeble()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Stream is not seekable');
+
         self::$isStreamGetMetaDataError = true;
         $r = fopen('php://temp', 'r');
         $stream = new Stream($r);
@@ -788,12 +774,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->close();
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Error seeking within stream
-     */
     public function testStreamFailOnSeek()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Error seeking within stream');
+
         self::$isFSeekError = true;
         $r = fopen('php://temp', 'r');
         $stream = new Stream($r);
@@ -810,11 +795,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->close();
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testStreamFailOnConvertToString()
     {
+        $this->expectException(\RuntimeException::class);
+        // $this->expectExceptionMessage('Error seeking within stream');
+        
         self::$isStreamGetContentError = true;
         $r = fopen('php://temp', 'r');
         $stream = new Stream($r);

@@ -30,3 +30,6 @@ aprendizado rápido e sólido.
 A **performance** apresenta bons resultados, pois implementa muitas das recomendações
 que visam a otimização tanto do *back-end* quanto do *front-end*, alem de possuir uma
 arquitetura leve e bem definida.
+
+
+phpunit --bootstrap tests/bootstrap.php  --configuration phpunit.xml

@@ -18,18 +18,19 @@ use ReflectionMethod;
 use InvalidArgumentException;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
+use PHPUnit\Framework\TestCase;
 use EllevenFw\Library\Network\Request;
 use EllevenFw\Library\Network\ServerRequest;
 use EllevenFw\Library\Network\PhpInputStream;
 
-class MessageTraitTest extends \PHPUnit_Framework_TestCase
+class MessageTraitTest extends TestCase
 {
     /**
      * @var MessageInterface
      */
     protected $message;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->message = new Request();
     }
@@ -66,10 +67,11 @@ class MessageTraitTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider invalidProtocolVersionProvider
-     * @expectedException \InvalidArgumentException
      */
     public function testWithProtocolVersionRaisesExceptionForInvalidVersion($version)
     {
+        $this->expectException(\InvalidArgumentException::class);
+
         $request = new Request();
 
         $request->withProtocolVersion($version);
@@ -199,11 +201,12 @@ class MessageTraitTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider invalidGeneralHeaderValues
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Invalid header value
      */
     public function testWithHeaderRaisesExceptionForInvalidNestedHeaderValue($value)
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid header value');
+
         $this->message->withHeader('X-Foo', [ $value ]);
     }
 
@@ -219,11 +222,12 @@ class MessageTraitTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider invalidHeaderValues
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage Invalid header value
      */
     public function testWithHeaderRaisesExceptionForInvalidValueType($value)
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid header value');
+
         $this->message->withHeader('X-Foo', $value);
     }
 
@@ -237,11 +241,12 @@ class MessageTraitTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider invalidGeneralHeaderValues
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage must be a string
      */
     public function testWithAddedHeaderRaisesExceptionForNonStringNonArrayValue($value)
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a string');
+
         $this->message->withAddedHeader('X-Foo', $value);
     }
 
@@ -290,19 +295,21 @@ class MessageTraitTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider headersWithInjectionVectors
-     * @expectedException \InvalidArgumentException
      */
     public function testDoesNotAllowCRLFInjectionWhenCallingWithHeader($name, $value)
     {
+        $this->expectException(\InvalidArgumentException::class);
+        
         $this->message->withHeader($name, $value);
     }
 
     /**
      * @dataProvider headersWithInjectionVectors
-     * @expectedException \InvalidArgumentException
      */
     public function testDoesNotAllowCRLFInjectionWhenCallingWithAddedHeader($name, $value)
     {
+        $this->expectException(\InvalidArgumentException::class);
+
         $this->message->withAddedHeader($name, $value);
     }
 
@@ -361,21 +368,23 @@ class MessageTraitTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider invalidArrayHeaderValues
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage header value type
      */
     public function testWithHeaderShouldRaiseExceptionForInvalidHeaderValuesInArrays($value)
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('header value type');
+
         $this->message->withHeader('X-Test-Array', [ $value ]);
     }
 
     /**
      * @dataProvider invalidHeaderValueTypes
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage header value type
      */
     public function testWithHeaderShouldRaiseExceptionForInvalidHeaderScalarValues($value)
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('header value type');
+        
         $this->message->withHeader('X-Test-Scalar', $value);
     }
 

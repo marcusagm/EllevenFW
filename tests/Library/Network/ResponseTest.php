@@ -5,17 +5,18 @@ namespace EllevenFw\Test\Library\Network;
 use DOMDocument;
 use DOMXPath;
 use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
 use EllevenFw\Library\Network\Response;
 use EllevenFw\Library\Network\Stream;
 
-class ResponseTest extends \PHPUnit_Framework_TestCase
+class ResponseTest extends TestCase
 {
     /**
      * @var Response
     */
     protected $response;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->response = new Response();
     }
@@ -44,12 +45,9 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('Foo Bar!', $response->getReasonPhrase());
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testConstructorRaisesExceptionForInvalidStream()
     {
-//        $this->expectException(InvalidArgumentException::class);
+       $this->expectException(\InvalidArgumentException::class);
         new Response([ 'TOTALLY INVALID' ]);
     }
 
@@ -86,23 +84,20 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider invalidStatusCodes
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage Invalid status code
      */
     public function testConstructorRaisesExceptionForInvalidStatus($code)
     {
-//        $this->expectException(InvalidArgumentException::class);
-//        $this->expectExceptionMessage('Invalid status code');
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid status code');
         new Response('php://memory', $code);
     }
 
     /**
      * @dataProvider invalidStatusCodes
-     * @expectedException InvalidArgumentException
      */
     public function testCannotSetInvalidStatusCode($code)
     {
-//        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $this->response->withStatus($code);
     }
 
@@ -135,13 +130,11 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider invalidResponseBody
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage stream
      */
     public function testConstructorRaisesExceptionForInvalidBody($body)
     {
-//        $this->expectException(InvalidArgumentException::class);
-//        $this->expectExceptionMessage('stream');
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('stream');
         new Response($body);
     }
 
@@ -158,28 +151,24 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider invalidHeaderTypes
-     * @expectedException InvalidArgumentException
      */
     public function testConstructorRaisesExceptionForInvalidHeaders($headers, $contains = 'header value type')
     {
-//        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
 //        $this->expectExceptionMessage($contains);
         new Response('php://memory', 200, $headers);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testInvalidStatusCodeInConstructor()
     {
-//        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         new Response('php://memory', null);
     }
 
     public function testReasonPhraseCanBeEmpty()
     {
         $response = $this->response->withStatus(555);
-        $this->assertInternalType('string', $response->getReasonPhrase());
+        $this->assertIsString($response->getReasonPhrase());
         $this->assertEmpty($response->getReasonPhrase());
     }
 
@@ -203,11 +192,10 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider headersWithInjectionVectors
-     * @expectedException InvalidArgumentException
      */
     public function testConstructorRaisesExceptionForHeadersWithCRLFVectors($name, $value)
     {
-//        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         new Response('php://memory', 200, [$name => $value]);
     }
 }

@@ -21,6 +21,6 @@ namespace EllevenFw\Library\Basic;
  *
  * @author Marcus Maia <contato@marcusmaia.com>
  */
-class String {
+class Text {
 
 }

@@ -17,6 +17,7 @@
 namespace EllevenFw\Test\Library\Network;
 
 use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
 use EllevenFw\Library\Network\HeaderSecurity;
 
 /**
@@ -28,7 +29,7 @@ use EllevenFw\Library\Network\HeaderSecurity;
  * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
-class HeaderSecurityTest extends \PHPUnit_Framework_TestCase
+class HeaderSecurityTest extends TestCase
 {
 
     /**
@@ -105,12 +106,12 @@ class HeaderSecurityTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
      * @dataProvider assertInvalidValues
      */
     public function testAssertValidRaisesExceptionForInvalidValue($value)
     {
-        //$this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
+
         HeaderSecurity::assertValid($value);
     }
 
@@ -142,11 +143,12 @@ class HeaderSecurityTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
      * @dataProvider invalidHeaderNames
      */
     public function testAssertValidHeaderNames($value)
     {
+        $this->expectException(\InvalidArgumentException::class);
+
         HeaderSecurity::assertValidName($value);
     }
 

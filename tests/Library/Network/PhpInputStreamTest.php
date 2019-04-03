@@ -16,9 +16,10 @@
 
 namespace EllevenFw\Test\Library\Network;
 
+use PHPUnit\Framework\TestCase;
 use EllevenFw\Library\Network\PhpInputStream;
 
-class PhpInputStreamTest extends \PHPUnit_Framework_TestCase
+class PhpInputStreamTest extends TestCase
 {
 
     /**
@@ -31,7 +32,7 @@ class PhpInputStreamTest extends \PHPUnit_Framework_TestCase
      */
     protected $stream;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->file = __DIR__ . '/assets/php-input-stream.txt';
         $this->stream = new PhpInputStream($this->file);
@@ -42,7 +43,7 @@ class PhpInputStreamTest extends \PHPUnit_Framework_TestCase
         return file_get_contents($this->file);
     }
 
-    public function assertStreamContents($test, $message = null)
+    public function assertStreamContents($test, $message = '')
     {
         $content = $this->getFileContents();
         $this->assertSame($content, $test, $message);

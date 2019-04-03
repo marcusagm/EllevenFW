@@ -18,11 +18,12 @@ namespace EllevenFw\Test\Library\Network;
 
 use ReflectionProperty;
 use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
 use EllevenFw\Library\Network\Uri;
 use EllevenFw\Library\Network\ServerRequest;
 use EllevenFw\Library\Network\UploadedFile;
 
-class ServerRequestTest extends \PHPUnit_Framework_TestCase
+class ServerRequestTest extends TestCase
 {
 
     /**
@@ -30,7 +31,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
      */
     protected $request;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->request = new ServerRequest();
     }
@@ -181,7 +182,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     public function testCookieParamsAreAnEmptyArrayAtInitialization()
     {
         $request = new ServerRequest();
-        $this->assertInternalType('array', $request->getCookieParams());
+        $this->assertIsArray($request->getCookieParams());
         $this->assertCount(0, $request->getCookieParams());
     }
 
@@ -191,7 +192,7 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
     public function testQueryParamsAreAnEmptyArrayAtInitialization()
     {
         $request = new ServerRequest();
-        $this->assertInternalType('array', $request->getQueryParams());
+        $this->assertIsArray($request->getQueryParams());
         $this->assertCount(0, $request->getQueryParams());
     }
 
@@ -219,13 +220,10 @@ class ServerRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertSame([], $request->getAttributes());
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
     public function testTryToAddInvalidUploadedFiles()
     {
         $request = new ServerRequest();
-        //$this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $request->withUploadedFiles([null]);
     }
 

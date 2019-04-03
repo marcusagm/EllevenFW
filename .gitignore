@@ -34,6 +34,7 @@ local.properties
 .settings/
 .loadpath
 .recommenders
+.phpunit.result.cache
 
 # Eclipse Core
 .project

@@ -100,7 +100,10 @@ class PhpConfigureEngine implements ConfigureEngineInterface
     public function read()
     {
         if ($this->read === false) {
+            ob_start();
             $data = include $this->path;
+            ob_get_clean();
+            // $data = eval(file_get_contents($this->path));
             if (is_array($data) === false) {
                 throw new CoreException(
                     'Erro ao ler o arquivo de configuração. '
